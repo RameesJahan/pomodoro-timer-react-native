@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "pomodoro-timer",
+    "name": "Pomodoro Timer",
     "slug": "pomodoro-timer",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#527e5c"
       },
       "package": "com.kaakkapps.pomodorotimer"
     },
@@ -31,6 +31,14 @@
       "eas": {
         "projectId": "5330e3c1-c28c-43a4-8dbe-38baf83c78be"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "sounds": ["assets/sounds/beep_sound.mp3"]
+        }
+      ]
+    ]
   }
 }

@@ -1,31 +1,40 @@
 import { StyleSheet, Text, TouchableOpacity, View  } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
-import Timer from './components/Timer/Timer';
 import COLORS from './constants/COLORS';
-import * as Linking from 'expo-linking';
+import Header from './components/Header';
+import TimerContainer from './components/TimerContainer';
+import SettingsModel from './components/SettingsModel';
+import { useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { SettingsProvider } from './contexts/SettingsContext';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
 
-  const PRIVACY_URL = 'http://kaakka.tech/pomodoro-timer-privacy-policy/'
+  const [isSettingsVisible, setIsSettingsVisible] = useState(false)
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
+
+  const handleUpdateSettings = () => {
+    // setIsSettingsVisible(true)
+  }
+
+
+  const handleOnLoadSettings = async() => {
+    await SplashScreen.hideAsync();
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image
-          style={styles.image}
-          source={require('./assets/icon.png')}
-        />
-      </View>
-      <View style={{padding: 25}}>
-        <Timer />
-      </View>
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Developed By Kaakka Apps</Text>
-        <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}>
-          <Text style={styles.footerTextLink}>PRIVACY POLICY</Text>
-        </TouchableOpacity>
-      </View>
+      <View style={styles.content} >
+        <SettingsProvider onLoadSettings={handleOnLoadSettings}>
+          <Header isTimerRunning={isTimerRunning} onPressSettings={() => setIsSettingsVisible(true)} />
+          <TimerContainer onRunning={(value) => setIsTimerRunning(value)} />
+          <SettingsModel visible={isSettingsVisible} onClose={() => setIsSettingsVisible(false)} onUpdateSettings={() => handleUpdateSettings} />
+        </SettingsProvider>
+      </View>  
+      <StatusBar style="dark-content" />
     </SafeAreaView>
   );
 }
@@ -33,34 +42,10 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    height: '100%',
+    backgroundColor: COLORS.greenWhite,
   },
-  image: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#0553',
-  },
-  imageContainer: {
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  footer:{
-    bottom: 0,
-    width: '100%',
-    alignItems: 'center',
-  },
-  footerText:{
-    fontSize: 18,
-    fontWeight: '500'
-  },
-  footerTextLink:{
-    color: '#2776ff',
-    fontWeight: '500',
-    textDecorationLine: 'underline',
+  content:{
+    flex: 1,
+    gap: 10,
   }
 });
