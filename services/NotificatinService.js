@@ -29,6 +29,11 @@ class NotificationService {
     return status === 'granted'
   }
 
+  async askForPermission() {
+    const { status } = await Notification.requestPermissionsAsync()
+    return status === 'granted'
+  }
+
   async scheduleRepeatNotification(content) {
     this.notificationId = await Notification.scheduleNotificationAsync({
       content,

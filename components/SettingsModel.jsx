@@ -103,7 +103,7 @@ const SettingsModel = ({ visible, onClose, onUpdateSettings }) => {
         </View>
         <View style={styles.footer}>
           <Text>Developed by Kaakka Apps</Text>
-          <Text style={styles.footerVersionText}>Version: 2.0.0</Text>
+          <Text style={styles.footerVersionText}>Version: 2.0.1</Text>
           <TouchableOpacity onPress={() => Linking.openURL("https://kaakka.tech/pomodoro-timer-privacy-policy/")}>
             <Text style={{ color: COLORS.primary }}>Privacy Policy</Text>
           </TouchableOpacity>

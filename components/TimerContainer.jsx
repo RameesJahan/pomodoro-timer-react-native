@@ -32,7 +32,10 @@ const TimerContainer = ({ onRunning }) => {
     (async () => {
       const permissionGranted = await notificationService.requestPermission();
       if (!permissionGranted) {
-        alert('No notification permissions!');
+        const isGranted = await notificationService.askForPermission();
+        if (!isGranted) {
+          alert('No notification permissions granted!');
+        }
       }
     })();
 
