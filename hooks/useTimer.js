@@ -1,42 +1,81 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { AppState } from 'react-native';
 
-export default useTimer = (arg) => {
-  const [remSec, setRemSec] = useState(arg * 60);
-  const [min, setMin] = useState(arg);
-  const [sec, setSec] = useState(0);
-  const [expired, setExpired] = useState(false);
-  const [isRunning, setIsRunning] = useState(false)
-  const interval = useRef(null);
+export default useTimer = (initialTime) => {
+  const [time, setTime] = useState(initialTime);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+  const intervalRef = useRef(null);
+  const pausedTimeRef = useRef(0);
+  
 
-  const SECOND = 60;
 
-  const start = () => {
-    if(!isRunning){
-      setExpired(false);
-      setIsRunning(true)
-      setRemSec(min*SECOND)
-      interval.current = setInterval(() => {
-        setRemSec((_prev) => _prev - 1);
-      }, 1000);
+  const updateTimer = useCallback(() => {
+    if(time >= 0) {
+      setTime(prev => prev - 1);
+      pausedTimeRef.current = Date.now();
     }
-  };
-  const stop = () => {
-    setExpired(true);
-    setIsRunning(false)
-    clearInterval(interval.current);
-    interval.current = null
-  };
+  },[time])
+
+  const startTimer = useCallback(() => {
+    clearInterval(intervalRef.current);
+    
+    intervalRef.current = setInterval(updateTimer, 1000); //TODO: change to 1000
+  },[updateTimer]);
+
+  const handleAppStateChange = useCallback((nextAppState) => {
+    if (nextAppState === 'active' && isRunning) {
+      const now = Date.now();
+      const diff = Math.floor((now - pausedTimeRef.current)/ 1000);
+      const remTime = time - diff;
+      setTime(remTime);
+      startTimer();
+    } else if (nextAppState === 'background' && isRunning) {
+      clearInterval(intervalRef.current);
+    }
+  }, [isRunning, startTimer]);
 
   useEffect(() => {
-    return () => clearInterval(interval.current);
+    if(time <= 0) {
+      setIsFinished(true);
+      setTime(0);
+      pause();
+    }  
+  }, [time]);
+
+  useEffect(() => {
+    return () => {
+      clearInterval(intervalRef.current);
+    };
   }, []);
 
   useEffect(() => {
-    if(remSec<=0) stop()
-    setSec(() => remSec%SECOND)
-    setMin(() => Math.floor(remSec/SECOND))
-  }, [remSec])
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, [handleAppStateChange]);
   
 
-  return { min, sec, expired,isRunning, start, setMin };
+  const start = useCallback(() => {
+    if (!isRunning && !isFinished && time > 0) {
+      setIsRunning(true);
+      setIsFinished(false);
+      startTimer();
+    }
+  }, [isRunning, startTimer]);
+
+  const pause = useCallback(() => {
+    if (isRunning) {
+      setIsRunning(false);
+      clearInterval(intervalRef.current);
+    }
+  }, [isRunning]);
+
+  const reset = useCallback((newTime) => {
+    setIsRunning(false);
+    setIsFinished(false);
+    setTime(newTime || initialTime);
+    clearInterval(intervalRef.current);
+  }, [initialTime]);
+
+  return { time, isRunning, start, pause, reset, isFinished };
 };
