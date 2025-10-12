@@ -1,8 +1,11 @@
 import notifee, { AuthorizationStatus, EventType } from "@notifee/react-native";
 
 notifee.onForegroundEvent(({ type, detail }) => {
-
   console.log("Foreground Event", type, detail);
+});
+
+notifee.onBackgroundEvent(async ({ type, detail }) => {
+  console.log("Background Event", type, detail);
 });
 
 /**
@@ -42,10 +45,11 @@ class NotifeeNotificationService {
    * @param {string} notificationOptions.body - Body text of the notification
    * @param {import("@notifee/react-native").NotificationAndroid} [notificationOptions.android] - Android specific options
    * @param {Object} [notificationOptions.ios] - iOS specific options
+   * @param {Object.<string, (string|number|Object)>} [notificationOptions.data] - Data associated with the notification
    * @returns {Promise<string>} - Promise resolving to the notification ID
    * @throws {Error} - If notification display fails
    */
-  async displayNotification({ title, body, android, ios }) {
+  async displayNotification({ title, body, android, ios, data }) {
     try {
       const permission = await notifee.requestPermission();
       if (permission.authorizationStatus === AuthorizationStatus.DENIED) return;
@@ -63,6 +67,7 @@ class NotifeeNotificationService {
         id: this.notificationId,
         title,
         body,
+        data: data,
         android: {
           channelId: channel.id,
           ...android,
@@ -74,12 +79,64 @@ class NotifeeNotificationService {
     }
   }
 
-  async displayTriggerNotification({ title, body }) {
-    
+  /**
+   * Displays a notification using Notifee
+   * @async
+   * @param {Object} notificationOptions - Options for the notification
+   * @param {string} notificationOptions.title - Title of the notification
+   * @param {string} notificationOptions.body - Body text of the notification
+   * @param {import("@notifee/react-native").NotificationAndroid} [notificationOptions.android] - Android specific options
+   * @param {Object} [notificationOptions.ios] - iOS specific options
+   * @param {Object.<string, (string|number|Object)>} [notificationOptions.data] - Data associated with the notification
+   * @param {import("@notifee/react-native").TimestampTrigger} notificationOptions.trigger - Trigger for the notification
+   * @returns {Promise<string>} - Promise resolving to the notification ID
+   * @throws {Error} - If notification display fails
+   */
+  async displayTriggerNotification({
+    title,
+    body,
+    android,
+    ios,
+    data,
+    trigger,
+  }) {
+    try {
+      const permission = await notifee.requestPermission();
+      if (permission.authorizationStatus === AuthorizationStatus.DENIED) return;
+      let channel = await notifee.getChannel(this.channelId);
+      if (channel === null) {
+        channel = await notifee.createChannel({
+          id: this.channelId,
+          name: this.channelName,
+        });
+      }
+
+      console.log(channel);
+
+      await notifee.createTriggerNotification(
+        {
+          id: this.notificationId,
+          title,
+          body,
+          data: data,
+          android: {
+            channelId: channel.id,
+            ...android,
+          },
+          ios,
+        },
+        trigger
+      );
+    } catch (error) {
+      if (error instanceof Error)
+        console.log("Trigger Notification Error:", error.stack);
+      console.log("Trigger Notification Error:", error);
+    }
   }
 
   async cancelNotification() {
     if (this.notificationId) {
+      console.log("Cancelling Notification");
       await notifee.cancelNotification(this.notificationId);
     }
   }

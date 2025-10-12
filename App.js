@@ -12,10 +12,7 @@ import NotifeeNotificationService from "./services/NotifeeNotificationService";
 import notifee, { AuthorizationStatus } from "@notifee/react-native";
 
 SplashScreen.preventAutoHideAsync();
-const notifeeInstance = new NotifeeNotificationService({
-  notificationId: "test-notification",
-  channelId: "test-channel",
-});
+
 
 export default function App() {
   const [isSettingsVisible, setIsSettingsVisible] = useState(false);
