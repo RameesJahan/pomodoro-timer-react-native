@@ -36,3 +36,7 @@ yarn-error.*
 
 /%ProgramData%/
 .StoreAssets/
+
+#Native folders
+android/
+ios/

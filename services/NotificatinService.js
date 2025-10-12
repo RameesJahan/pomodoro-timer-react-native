@@ -8,7 +8,8 @@ class NotificationService {
       handleNotification: async () => {
         await this.dismissNotifications()
         return {
-          shouldShowAlert: true,
+          shouldShowBanner: true,
+          shouldShowList: false,
           shouldPlaySound: true,
           shouldSetBadge: false,
         }
